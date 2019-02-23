@@ -182,5 +182,5 @@ def construct_model(max_features, max_len):
     return model
 
 # train_model()
-test_model_on_labeled_data()
+# test_model_on_labeled_data()
 # test_model_on_unlabeled_data()
