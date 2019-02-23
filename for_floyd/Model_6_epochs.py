@@ -32,10 +32,12 @@ from sklearn.utils.class_weight import compute_class_weight
 
 max_features = 20000
 max_len = 20
-batch_size = 128
-epochs = 6
+batch_size = 256
+epochs = 8
+learning_rate = 5e-5
+#lr_decay = 2e-2
 
-cur_model_name = 'output/multiclass_bidir_2layer_16_emb_100_drop02everywhere3_2.h5'
+cur_model_name = 'multiclass_bidir_2layer_16_emb_100_drop02everywhere3_3.h5'
 
 ''' Compute class weights '''
 
@@ -161,52 +163,6 @@ def get_xs(data):
     xs = [str(x).encode().decode('utf-8').split(' ') for x in xs]
     return xs, xs_str
 
-def test_model_on_unlabeled_data():
-    data = get_data('data/cleaned_data_ok.csv')
-
-    xs, xs_str = get_xs(data)
-    best_words_set = data_util.construct_good_set(xs, max_features, 0)
-
-    data_util.sentences_to_scalars_loaded_dict(xs, best_words_set)
-
-    xs_scalar = keras.preprocessing.sequence.pad_sequences(xs, maxlen=max_len, padding='post',
-                                                                 truncating='post')
-
-    model = load_model(cur_model_name)
-    result = model.predict(xs_scalar)
-    max_indices = [np.argmax(r) for r in result]
-    # strings_and_scores = zip(xs_str, result)
-    pos = []
-    neg = []
-    neutral = []
-
-    for index, i in enumerate(max_indices):
-        if i == 0:
-            neg.append((xs_str[index], result[index]))
-            continue
-        if i == 1:
-            pos.append((xs_str[index], result[index]))
-            continue
-        if i == 2:
-            neutral.append((xs_str[index], result[index]))
-            continue
-        print("Something's wrong")
-    pos = list(sorted(pos, key=lambda x: x[1][1]))
-    neg = list(sorted(neg, key=lambda x: x[1][0]))
-    neutral = list(sorted(neutral, key=lambda x: x[1][2]))
-
-    # visual_sorted = list(sorted(strings_and_scores, key=lambda x:x[1]))
-    def write_to_file(strings_and_scores, path):
-        with io.open(path, 'w', encoding='utf-8') as file_handler:
-            for item in strings_and_scores:
-                st = str(item[0]).decode('utf-8')
-                file_handler.write(u"{}\t{}\n".format(st, item[1]))
-
-    write_to_file(pos, 'data/res_pos.txt')
-    write_to_file(neg, 'data/res_neg.txt')
-    write_to_file(neutral, 'data/res_neutral.txt')
-    print(3)
-
 
 def get_ys(data, train_test_split):
     ys = data[:, 1]
@@ -231,8 +187,6 @@ def get_ys(data, train_test_split):
     return ys_train, ys_test
 
 
-
-
 def construct_model(max_features, max_len):
     model = Sequential()
 
@@ -241,10 +195,9 @@ def construct_model(max_features, max_len):
     model.add(Bidirectional(LSTM(16, dropout=0.2, recurrent_dropout=0.2)))
     model.add(Dense(3, activation='softmax'))
     model.compile(loss='categorical_crossentropy',
-                  optimizer=Adam(lr=3e-4),
+                  optimizer=Adam(lr=learning_rate),
                   metrics=['accuracy'])
     print(model.summary())
     return model
 
 train_model()
-# test_model_on_unlabeled_data()
