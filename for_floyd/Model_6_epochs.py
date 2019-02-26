@@ -33,11 +33,11 @@ from sklearn.utils.class_weight import compute_class_weight
 max_features = 20000
 max_len = 20
 batch_size = 256
-epochs = 8
-learning_rate = 5e-5
+epochs = 30
+learning_rate = 1e-5
 #lr_decay = 2e-2
 
-cur_model_name = 'multiclass_bidir_2layer_16_emb_100_drop02everywhere3_3.h5'
+cur_model_name = 'multiclass_bidir_2layer_16_emb_100_drop02everywhere3_4.h5'
 
 ''' Compute class weights '''
 
